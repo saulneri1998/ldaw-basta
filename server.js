@@ -54,19 +54,75 @@ app.use('/', express.static(__dirname + '/public'));
 // Routes
 app.use('/', webRoutes);
 
+const {
+    joinUser,
+    userCanStart,
+    startGame,
+    getGame,
+    setAnswer,
+    getResults,
+    restart
+} = require('./utils/game')
+
 io.on('connection', (socket) => {
     // Recibe la conexión del cliente
     console.log('Client connected...');
-    let i = 0;
-    // Emite un mensaje
-    setInterval(() => {
-        socket.emit('toast', { message: `Message: ${i}` });
-        i++;
-    }, 3000);
-    // Recibe un mensaje
-    socket.on('messageToServer', (data) => {
-        console.log('messageReceivedFromClient: ', data.text);
+
+    // Ususario se coencta
+    socket.on('joinGame', (data) => {
+        console.log('user joined: ', data.username);
+
+        const room = joinUser(socket.id, data.username);
+        socket.join(room);
+        socket.emit('canStart', userCanStart(socket.id))
+
+        const [gameState, users, waitingUsers] = getGame();
+        if (!gameState.active && users.length + waitingUsers.length >= 2) {
+            io.to("waiting").emit('canStart', true)
+            io.to("active").emit('canStart', true)
+        }
     });
+
+    socket.on('startGame', () => {
+        io.to("waiting").emit('subscribeToActive', true);
+        let game = startGame();
+        io.to("active").emit('gameStarted', game);
+    })
+
+    socket.on('restartGame', () => {
+        restart();
+        const [gameState, users, waitingUsers] = getGame();
+        if (!gameState.active && users.length + waitingUsers.length >= 2) {
+            io.to("waiting").emit('canStart', true)
+            io.to("active").emit('canStart', true)
+            io.to("waiting").emit('subscribeToActive', true);
+        }
+    })
+
+    socket.on('subscribeToActive', () => {
+        socket.join("active");
+    })
+
+    socket.on('sendAnswer', answer => {
+        const [game, , ] = getGame();
+        if (!game.firstAnswer) {
+            io.to("active").emit("countdown", 10);
+            let i = 9;
+            let interval = setInterval(() => {
+                io.to("active").emit('remainingTime', i);
+                i--;
+                if (i < 0) {
+                    clearInterval(interval);
+                }
+            }, 1000);
+        }
+        setAnswer(answer, socket.id);
+    })
+
+    socket.on('askResults', letter => {
+        let res = getResults(letter);
+        socket.emit("results", res);
+    })
 });
 
 // App init

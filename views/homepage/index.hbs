@@ -1,19 +1,59 @@
-<main role="main" class="container">
-  <div class="starter-template">
-    <h1>Bootstrap starter template</h1>
-    <p class="lead">
-      Use this document as a way to quickly start any new project.<br> All you get is this text and a mostly barebones HTML document.
-    </p>
-    <p>
-      Source: <a href="https://getbootstrap.com/docs/4.0/examples/" target="_blank">https://getbootstrap.com/docs/4.0/examples/</a>
-    </p>
-    <div class="row">
-      <div class="col">
-        <input type="text" id="messageToServer">
-        <button class="btn btn-success" onclick="emitEventToSocketIo();">
-            Message
-        </button>
+<main id="join-game" role="main" class="container">
+  <div class="card">
+    <h5 class="card-header">Juego de Basta</h5>
+    <div class="card-body">
+      <h5 class="card-title">Escribe tu nombre de usuario</h5>
+      
+      <div class="input-group mb-3">
+        <input id="username-input" type="text" class="form-control" placeholder="Usuario" aria-label="Usuario" aria-describedby="basic-addon1">
       </div>
-     </div>
+
+      <button type="button" class="btn btn-primary" onclick="joinGame()">Entrar</button>
+    </div>
   </div>
+</main>
+
+<main id='active-game' role="main" class="container" style="display:none">
+    <div class="card">
+      <h5 class="card-header"> <strong id="active-username"></strong> La letra es: <span id="letter"></span></h5>
+      <div class="card-body">
+
+        <h4 id="remaining-time" class="card-title" style="display:none">Basta!  tiempo restante: <span id="remaining-secs">10</span></h4>
+      
+        <div class="input-group mb-3">
+          <input id="nombre-input" type="text" class="form-control" placeholder="Nombre" aria-label="Nombre" >
+          <input id="color-input" type="text" class="form-control" placeholder="Color" aria-label="Color" >
+          <input id="fruto-input" type="text" class="form-control" placeholder="Fruto" aria-label="Fruto" >
+        </div>
+
+        <button type="button" class="btn btn-primary" onclick="sendAnswer()">Enviar</button>
+      </div>
+    </div>
+</main>
+
+<main id='waiting-game' role="main" class="container" style="display:none">
+    <div class="card">
+      <h5 class="card-header"><strong id="waiting-username"></strong> Esperando...</h5>
+      <div class="card-body">
+        <button id="start-btn" type="button" disabled class="btn btn-primary" onclick="startGame()">Comenzar el juego</button>
+      </div>
+    </div>
+</main>
+
+<main id='results-game' role="main" class="container" style="display:none">
+    <div class="card">
+      <div class="card-body">
+        <button type="button" class="btn btn-primary" onclick="restartGame()">Reiniciar</button>
+      </div>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Username</th>
+          <th scope="col">Score</th>
+        </tr>
+      </thead>
+      <tbody id="results">
+      </tbody>
+    </table>
 </main>
